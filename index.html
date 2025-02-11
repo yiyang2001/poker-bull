@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牛牛游戏牌型计算器</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>牛牛游戏牌型计算器</h1>
+        <div class="input-section">
+            <label for="cards">输入5张牌（用逗号分隔，例如：A,2,3,4,5）：</label>
+            <input type="text" id="cards" placeholder="A,2,3,4,5">
+            <button onclick="calculate()">计算牌型</button>
+        </div>
+        <div class="result-section">
+            <h2>可能的牌型：</h2>
+            <ul id="result"></ul>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牛牛牌型计算器</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        input { width: 40px; margin: 5px; text-align: center; }
+        button { margin-top: 10px; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <h2>牛牛牌型计算器</h2>
+    <p>输入5张牌（2-10, J, Q, K, A），然后点击计算</p>
+    <div>
+        <input type="text" id="card1"> 
+        <input type="text" id="card2"> 
+        <input type="text" id="card3"> 
+        <input type="text" id="card4"> 
+        <input type="text" id="card5"> 
+    </div>
+    <button onclick="calculate()">计算</button>
+    <h3 id="result"></h3>
+    <ul id="possibleResults"></ul>
+
+    <script>
+        function getCardValue(card) {
+            if (card === 'J' || card === 'Q' || card === 'K') return 10;
+            if (card === 'A') return 1;
+            if (card === '3') return [3, 6];
+            if (card === '6') return [6, 3];
+            return parseInt(card) || 0;
+        }
+
+        function findNiuniuCombination(cards) {
+            for (let i = 0; i < 3; i++) {
+                for (let j = i + 1; j < 4; j++) {
+                    for (let k = j + 1; k < 5; k++) {
+                        let sumOptions = combineValues([cards[i], cards[j], cards[k]]);
+                        if (sumOptions.some(sum => sum % 10 === 0)) {
+                            return [i, j, k];
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        function combineValues(values) {
+            if (values.some(v => Array.isArray(v))) {
+                let combinations = [[]];
+                for (let v of values) {
+                    let newCombinations = [];
+                    let options = Array.isArray(v) ? v : [v];
+                    for (let base of combinations) {
+                        for (let option of options) {
+                            newCombinations.push([...base, option]);
+                        }
+                    }
+                    combinations = newCombinations;
+                }
+                return combinations.map(set => set.reduce((a, b) => a + b, 0));
+            }
+            return [values.reduce((a, b) => a + b, 0)];
+        }
+
+        function calculate() {
+            let inputs = [
+                document.getElementById("card1").value.toUpperCase(),
+                document.getElementById("card2").value.toUpperCase(),
+                document.getElementById("card3").value.toUpperCase(),
+                document.getElementById("card4").value.toUpperCase(),
+                document.getElementById("card5").value.toUpperCase()
+            ];
+            
+            let cardValues = inputs.map(getCardValue);
+            let results = [];
+            
+            if (inputs.every(v => ['J', 'Q', 'K'].includes(v))) {
+                results.push("五花牛（5倍）");
+            }
+            if (inputs.includes('A') && ['J', 'Q', 'K'].some(face => inputs.includes(face))) {
+                if (inputs.includes('♠A')) {
+                    results.push("牛冬菇（3倍）");
+                }
+            }
+            
+            let niuniuIndices = findNiuniuCombination(cardValues);
+            if (niuniuIndices) {
+                let remainingCards = cardValues.filter((_, idx) => !niuniuIndices.includes(idx));
+                let sum = combineValues(remainingCards)[0] % 10;
+                
+                if (remainingCards[0] === remainingCards[1]) {
+                    results.unshift("孖宝（2倍）");
+                }
+                if (sum === 0) {
+                    results.push("牛牛");
+                } else {
+                    results.push(`牛${sum}`);
+                }
+            } else {
+                results.push("无牛");
+            }
+            
+            document.getElementById("result").innerText = results[0];
+            let possibleResultsList = document.getElementById("possibleResults");
+            possibleResultsList.innerHTML = "";
+            results.forEach(result => {
+                let li = document.createElement("li");
+                li.innerText = result;
+                possibleResultsList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
