@@ -203,7 +203,7 @@ function calculate() {
     const key = handInfo.desc;
     if (!shown.has(key)) {
       shown.add(key);
-      results.push(handInfo);
+      results.push({ ...handInfo, group });
     }
   }
   
@@ -218,10 +218,31 @@ function calculate() {
   // 按倍数降序排序（相同倍数则保持发现顺序）
   results.sort((a,b) => b.multiplier - a.multiplier);
   
-  // 显示结果
-  results.forEach(info => {
+  // 显示结果（带组合证明）
+  results.forEach((info) => {
     const li = document.createElement("li");
-    li.textContent = info.desc;
+    const group = info.group;
+    let proofText = '';
+    if (info.desc.includes('五只公')) {
+      // 五只公：展示全部5张
+      const allCards = cards.map(c => c.original).join(', ');
+      proofText = `—— 全牌：${allCards}`;
+    } else if (group) {
+      const threeStr = group.three.map(i => cards[i].original).join(', ');
+      const twoStr = group.two.map(i => cards[i].original).join(', ');
+      const threeVals = group.three.map(i => cards[i].value);
+      const twoVals = group.two.map(i => cards[i].value);
+      const threeSum = threeVals.reduce((a,b)=>a+b,0);
+      const twoSumVal = twoVals.reduce((a,b)=>a+b,0);
+      const niuVal = info.desc.includes('牛') ? (parseInt(info.desc.match(/牛(\d+)/)?.[1]) || twoSumVal % 10) : (twoSumVal % 10);
+      // 判断是否涉及3↔6转换（简化提示）
+      const hasConv = group.three.some(i => cards[i].rank === '3' || cards[i].rank === '6');
+      const convNote = hasConv ? '（可3↔6转换）' : '';
+      proofText = `—— 三张凑10组合：[${threeStr}] (和为${threeSum}${convNote})；剩余两张：[${twoStr}] (和为${twoSumVal}，个位为${niuVal === 0 ? '牛牛' : niuVal}，即${info.desc.split('(')[0].trim()})`;
+    } else {
+      proofText = '';
+    }
+    li.innerHTML = '<strong>' + info.desc + '</strong> ' + proofText;
     resultList.appendChild(li);
   });
 }
