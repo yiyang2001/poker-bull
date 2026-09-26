@@ -137,8 +137,9 @@ function evaluateHandType(cards, threeIdx, twoIdx) {
   if (isShuangAZiBao) return {type: '孖宝（双A）', multiplier: 4, desc: '孖宝（双A） (4倍)'};
   if (isZiBao) return {type: '孖宝', multiplier: 3, desc: '孖宝 (3倍)'};
   if (isShiDian) return {type: '十点／牛十', multiplier: 2, desc: '十点／牛十 (2倍)'};
-  // 否则为普通牛
-  return {type: '普通牛', multiplier: 1, desc: '普通牛 (1倍)'};
+  // 否则为普通牛：计算牛值（剩余两张牌点数和取个位）
+  const niuValue = twoSum % 10;
+  return {type: '普通牛', multiplier: 1, desc: `牛${niuValue} (1倍)`};
 }
 
 // 主计算函数

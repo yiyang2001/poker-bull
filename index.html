@@ -34,6 +34,8 @@
             min-height: 28px;
             color: #333;
         }
+        .red-suit { color: #c62828; font-weight: bold; }
+        .black-suit { color: #222; }
         .clear-btn {
             margin-top: 6px;
         }
@@ -118,7 +120,7 @@
             for (const suit of suits) {
                 for (const rank of ranks) {
                     const btn = document.createElement('button');
-                    btn.className = 'card-btn';
+                    btn.className = 'card-btn ' + (suit === '♥' || suit === '♦' ? 'red-suit' : 'black-suit');
                     btn.textContent = rank + suit;
                     btn.setAttribute('data-card', rank + suit);
                     btn.onclick = function() {
@@ -157,7 +159,17 @@
             };
 
             function updateDisplay() {
-                selectedDisplay.textContent = selected.length ? '已选：' + selected.join(', ') : '已选：—';
+                if (!selected.length) {
+                    selectedDisplay.innerHTML = '已选：—';
+                    return;
+                }
+                const html = selected.map(s => {
+                    const suitChar = s.slice(-1);
+                    const cardStr = s;
+                    const colorClass = (suitChar === '♥' || suitChar === '♦') ? 'red-suit' : 'black-suit';
+                    return '<span class="' + colorClass + '">' + cardStr + '</span>';
+                }).join(', ');
+                selectedDisplay.innerHTML = '已选：' + html;
             }
 
             // Expose selected for calculate
@@ -170,7 +182,12 @@
             const video = document.getElementById('camera-video');
             const captureBtn = document.getElementById('capture-btn');
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: true })
+                const constraints = { video: { facingMode: { exact: "environment" } } };
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .catch(function() {
+                        // 降级：尝试宽松环境后置
+                        return navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                    })
                     .then(function(stream) {
                         cameraStream = stream;
                         video.srcObject = stream;
