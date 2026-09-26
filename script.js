@@ -143,27 +143,41 @@ function evaluateHandType(cards, threeIdx, twoIdx) {
 
 // 主计算函数
 function calculate() {
-  const input = document.getElementById("cards").value;
-  if (!input.trim()) {
-    alert("请输入5张牌！");
-    return;
+  // 优先使用极速点选面板的选中牌（如果已选满5张）
+  let cards = [];
+  let inputStr = '';
+  if (typeof window.getGridSelection === 'function') {
+    const sel = window.getGridSelection();
+    if (Array.isArray(sel) && sel.length === 5) {
+      cards = sel.map(s => parseCard(s)).filter(c => c && c.value > 0);
+      if (cards.length === 5) {
+        // 直接使用网格数据
+        // 更新文本框同步
+        document.getElementById('cards').value = sel.join(',');
+      }
+    }
   }
-  
-  // 分割并解析牌
-  const parts = input.split(',').map(s => s.trim());
-  if (parts.length !== 5) {
-    alert("请输入恰好5张牌，用逗号分隔！");
-    return;
-  }
-  
-  const cards = [];
-  for (const p of parts) {
-    const card = parseCard(p);
-    if (!card || card.value === 0) {
-      alert(`无法识别牌面："${p}"。请使用如 A♠, 2♥, 10♦, J♣, Q♥ 等格式。`);
+  // 如果网格未满5张，回退到文本输入
+  if (cards.length !== 5) {
+    const input = document.getElementById("cards").value;
+    if (!input.trim()) {
+      alert("请输入5张牌！");
       return;
     }
-    cards.push(card);
+    const parts = input.split(',').map(s => s.trim());
+    if (parts.length !== 5) {
+      alert("请输入恰好5张牌，用逗号分隔！");
+      return;
+    }
+    cards = [];
+    for (const p of parts) {
+      const card = parseCard(p);
+      if (!card || card.value === 0) {
+        alert(`无法识别牌面："${p}"。请使用如 A♠, 2♥, 10♦, J♣, Q♥ 等格式。`);
+        return;
+      }
+      cards.push(card);
+    }
   }
   
   // 查找所有有效的三张牌组合

@@ -5,20 +5,209 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>牛牛游戏牌型计算器</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Grid picker styles */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 4px;
+            max-width: 720px;
+            margin: 10px auto;
+        }
+        .card-btn {
+            padding: 6px 2px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f9f9f9;
+            cursor: pointer;
+            user-select: none;
+        }
+        .card-btn.selected {
+            background: #4caf50;
+            color: white;
+            border-color: #388e3c;
+        }
+        .selected-display {
+            font-size: 16px;
+            margin: 8px 0;
+            min-height: 28px;
+            color: #333;
+        }
+        .clear-btn {
+            margin-top: 6px;
+        }
+        /* Camera section */
+        .camera-section {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 2px dashed #ccc;
+        }
+        #camera-video {
+            width: 320px;
+            height: 240px;
+            background: #222;
+            border-radius: 8px;
+            display: none;
+            margin-top: 8px;
+        }
+        #captured-img {
+            max-width: 320px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+        #capture-output {
+            font-size: 12px;
+            color: #555;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>牛牛游戏牌型计算器</h1>
+
+        <!-- Original text input -->
         <div class="input-section">
-            <label for="cards">输入5张牌（用逗号分隔，例如：A,2,3,4,5）：</label>
+            <label for="cards">输入5张牌（用逗号分隔，例如：A♠,2♥,3♣,10♦,K♥）：</label>
             <input type="text" id="cards" placeholder="例如：A♠,2♥,3♣,10♦,K♥（可含花色）">
             <button onclick="calculate()">计算牌型</button>
         </div>
+
+        <!-- Manual Grid Picker -->
+        <div class="grid-section">
+            <h2>极速点选手牌面板</h2>
+            <p>按顺序点击 5 张牌，选满后自动计算；点击已选牌可取消。</p>
+            <div id="card-grid" class="card-grid"></div>
+            <div id="selected-cards" class="selected-display">已选：—</div>
+            <button class="clear-btn" onclick="clearGridSelection()">清空重选</button>
+        </div>
+
+        <!-- Camera Capture -->
+        <div class="camera-section">
+            <h2>摄像头拍照识别入口</h2>
+            <button onclick="startCamera()">开启摄像头</button>
+            <button onclick="capturePhoto()" id="capture-btn" style="display:none;">拍照识别</button>
+            <video id="camera-video" autoplay playsinline></video>
+            <canvas id="camera-canvas" style="display:none;"></canvas>
+            <div>
+                <img id="captured-img" src="" alt="已捕获图片" style="display:none;">
+            </div>
+            <div id="capture-output"></div>
+        </div>
+
         <div class="result-section">
             <h2>可能的牌型：</h2>
             <ul id="result"></ul>
         </div>
     </div>
+
     <script src="script.js"></script>
+    <script>
+        // Grid generation and selection logic
+        (function() {
+            const suits = ['♠', '♥', '♦', '♣'];
+            const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+            const grid = document.getElementById('card-grid');
+            const selectedDisplay = document.getElementById('selected-cards');
+            let selected = []; // array of card strings like "A♠"
+
+            // Build 4x13 grid
+            for (const suit of suits) {
+                for (const rank of ranks) {
+                    const btn = document.createElement('button');
+                    btn.className = 'card-btn';
+                    btn.textContent = rank + suit;
+                    btn.setAttribute('data-card', rank + suit);
+                    btn.onclick = function() {
+                        const cardStr = btn.getAttribute('data-card');
+                        const idx = selected.indexOf(cardStr);
+                        if (idx >= 0) {
+                            // Deselect
+                            selected.splice(idx, 1);
+                            btn.classList.remove('selected');
+                        } else {
+                            // Select (max 5, if already 5 ignore new unless toggling existing)
+                            if (selected.length < 5) {
+                                selected.push(cardStr);
+                                btn.classList.add('selected');
+                            }
+                        }
+                        updateDisplay();
+                        // Auto-calculate when full
+                        if (selected.length === 5) {
+                            // Use selected array as input
+                            window.selectedCards = selected;
+                            calculate();
+                        }
+                    };
+                    grid.appendChild(btn);
+                }
+            }
+
+            window.clearGridSelection = function() {
+                selected = [];
+                const btns = grid.querySelectorAll('.card-btn');
+                btns.forEach(b => b.classList.remove('selected'));
+                updateDisplay();
+                document.getElementById('cards').value = '';
+                document.getElementById('result').innerHTML = '';
+            };
+
+            function updateDisplay() {
+                selectedDisplay.textContent = selected.length ? '已选：' + selected.join(', ') : '已选：—';
+            }
+
+            // Expose selected for calculate
+            window.getGridSelection = function() { return selected; };
+        })();
+
+        // Camera logic
+        let cameraStream = null;
+        window.startCamera = function() {
+            const video = document.getElementById('camera-video');
+            const captureBtn = document.getElementById('capture-btn');
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(stream) {
+                        cameraStream = stream;
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        captureBtn.style.display = 'inline-block';
+                        document.getElementById('capture-output').textContent = '摄像头已开启（实时预览中）';
+                    })
+                    .catch(function(err) {
+                        document.getElementById('capture-output').textContent = '摄像头访问失败：' + err.message;
+                    });
+            } else {
+                document.getElementById('capture-output').textContent = '浏览器不支持摄像头访问';
+            }
+        };
+
+        window.capturePhoto = function() {
+            const video = document.getElementById('camera-video');
+            const canvas = document.getElementById('camera-canvas');
+            const ctx = canvas.getContext('2d');
+            const img = document.getElementById('captured-img');
+            const output = document.getElementById('capture-output');
+            if (!video || video.readyState < 2) {
+                output.textContent = '视频流尚未就绪，请稍候再试';
+                return;
+            }
+            canvas.width = video.videoWidth || 320;
+            canvas.height = video.videoHeight || 240;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/png');
+            img.src = dataUrl;
+            img.style.display = 'block';
+            // Provide data stream info for future recognition
+            const size = Math.round(dataUrl.length * 0.75 / 1024); // approximate KB
+            output.textContent = '已拍照并捕获图片数据流（base64，约 ' + size + ' KB），可用于后续视觉识别接入。';
+            // Save to hidden field or expose globally for recognition integration
+            window.capturedImageData = dataUrl;
+        };
+    </script>
 </body>
 </html>
