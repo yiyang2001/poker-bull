@@ -93,7 +93,7 @@
         </div>
 
         <!-- Camera Capture (collapsed by default) -->
-        <button onclick="document.getElementById('camera-section').classList.toggle('hidden');this.textContent=document.getElementById('camera-section').classList.contains('hidden')?'展开摄像头':'收起摄像头';" style="margin-bottom:0.5rem;padding:0.35rem 0.8rem;border-radius:0.3rem;border:1px solid #ccc;background:#f3f4f6;font-size:0.85rem;cursor:pointer;">展开摄像头</button>
+        <button onclick="document.getElementById('camera-section').classList.toggle('hidden');this.textContent=document.getElementById('camera-section').classList.contains('hidden')?'展开摄像头':'收起摄像头';this.style.background=document.getElementById('camera-section').classList.contains('hidden')?'#e5e7eb':'#d1d5db';" style="margin-bottom:0.5rem;padding:0.35rem 0.8rem;border-radius:0.3rem;border:1px solid #ccc;background:#e5e7eb;color:#111827;font-size:0.85rem;cursor:pointer;font-weight:600;">展开摄像头</button>
         <div class="camera-section hidden" id="camera-section">
             <h2>摄像头拍照识别入口</h2>
             <button onclick="startCamera()">开启摄像头</button>
@@ -218,41 +218,40 @@
             const section = document.querySelector('.camera-section');
             const video = document.getElementById('camera-video');
             const captureBtn = document.getElementById('capture-btn');
-            if (section.classList.contains('hidden')) {
-                section.classList.remove('hidden');
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    const constraints = { video: { facingMode: { exact: "environment" } } };
-                    navigator.mediaDevices.getUserMedia(constraints)
-                        .catch(function() {
-                            // 降级：尝试宽松环境后置
-                            return navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                        })
-                        .then(function(stream) {
-                            cameraStream = stream;
-                            video.srcObject = stream;
-                            video.style.display = 'block';
-                            captureBtn.style.display = 'inline-block';
-                            document.getElementById('capture-output').textContent = '摄像头已开启（实时预览中）';
-                        })
-                        .catch(function(err) {
-                            document.getElementById('capture-output').textContent = '摄像头访问失败：' + err.message;
-                            section.classList.add('hidden');
-                        });
-                } else {
-                    document.getElementById('capture-output').textContent = '浏览器不支持摄像头访问';
-                }
-            } else {
-                // 关闭摄像头
-                if (cameraStream) {
-                    cameraStream.getTracks().forEach(track => track.stop());
-                    cameraStream = null;
-                }
-                video.srcObject = null;
-                video.style.display = 'none';
-                captureBtn.style.display = 'none';
-                document.getElementById('capture-output').textContent = '摄像头已关闭';
-                section.classList.add('hidden');
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                document.getElementById('capture-output').textContent = '浏览器不支持摄像头访问';
+                return;
             }
+            // 打开摄像头（不隐藏区域）
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            const constraints = { video: { facingMode: 'environment' } };
+            navigator.mediaDevices.getUserMedia(constraints)
+                .catch(function() { return navigator.mediaDevices.getUserMedia({ video: true }); })
+                .then(function(stream) {
+                    cameraStream = stream;
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    captureBtn.style.display = 'inline-block';
+                    document.getElementById('capture-output').textContent = '摄像头已开启（实时预览中）';
+                })
+                .catch(function(err) {
+                    document.getElementById('capture-output').textContent = '摄像头访问失败：' + err.message;
+                });
+        };
+        window.stopCamera = function() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            const video = document.getElementById('camera-video');
+            const captureBtn = document.getElementById('capture-btn');
+            video.srcObject = null;
+            video.style.display = 'none';
+            captureBtn.style.display = 'none';
+            document.getElementById('capture-output').textContent = '摄像头已关闭';
         };
 
         window.capturePhoto = function() {
