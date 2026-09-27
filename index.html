@@ -125,8 +125,10 @@
         <div id="blackjack-panel" class="blackjack-panel hidden">
             <h2>🃏 21点助手</h2>
             <p class="sub">无庄家明牌 · 盲打规则 · 15分可撤退 · 16分起步</p>
-            <div class="bj-input-row">
-                <input type="text" id="bj-cards" placeholder="输入手牌（纯点数，无花色），例如：A,7,K" style="flex:1; padding:0.5rem; border-radius:0.4rem; border:1px solid var(--border);">
+            <div id="bj-card-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0.35rem;margin-bottom:0.5rem;"></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.75rem;">
+                <input type="hidden" id="bj-cards" value="">
+                <div id="bj-selected" style="flex:1;font-size:0.85rem;color:#555;min-height:2rem;">已选：无</div>
                 <button onclick="calculateBlackjack()">计算</button>
             </div>
             <div class="bj-result" id="bj-result"></div>
@@ -269,6 +271,36 @@
             output.textContent = '已拍照，可上传或进一步识别';
         };
 
-    </script>
+    
+<script>
+(function(){
+  var ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  var grid = document.getElementById('bj-card-grid');
+  if (!grid) return;
+  var selected = [];
+  function update() {
+    document.getElementById('bj-cards').value = selected.join(',');
+    document.getElementById('bj-selected').textContent = selected.length ? '已选：' + selected.join(',') : '已选：无';
+  }
+  ranks.forEach(function(r){
+    var btn = document.createElement('button');
+    btn.textContent = r;
+    btn.className = 'card-btn';
+    btn.style.cssText = 'padding:0.35rem 0.1rem;font-size:0.85rem;min-height:2rem;border-radius:0.3rem;border:1px solid var(--border);cursor:pointer;background:#fff;';
+    btn.onclick = function(e){
+      e.preventDefault();
+      if (selected.indexOf(r) > -1) {
+        selected = selected.filter(function(x){ return x !== r; });
+        btn.style.background = '#fff'; btn.style.fontWeight = '400';
+      } else {
+        selected.push(r); btn.style.background = 'var(--primary)'; btn.style.color = '#fff'; btn.style.fontWeight = '700';
+      }
+      update();
+    };
+    grid.appendChild(btn);
+  });
+})();
+</script>
+</script>
 </body>
 </html>
