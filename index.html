@@ -87,22 +87,31 @@
             <button class="clear-btn" onclick="clearGridSelection()">清空重选</button>
         </div>
 
-        <!-- Camera Capture -->
-        <div class="camera-section">
+        <!-- Camera Capture (collapsed by default) -->
+        <div class="camera-section hidden" id="camera-section">
             <h2>摄像头拍照识别入口</h2>
             <button onclick="startCamera()">开启摄像头</button>
-            <button onclick="capturePhoto()" id="capture-btn" style="display:none;">拍照识别</button>
-            <video id="camera-video" autoplay playsinline></video>
-            <canvas id="camera-canvas" style="display:none;"></canvas>
-            <div>
+            <button class="camera-hidden" onclick="capturePhoto()" id="capture-btn" style="display:none;">拍照识别</button>
+            <video class="camera-hidden" id="camera-video" autoplay playsinline></video>
+            <canvas class="camera-hidden" id="camera-canvas" style="display:none;"></canvas>
+            <div class="camera-hidden">
                 <img id="captured-img" src="" alt="已捕获图片" style="display:none;">
             </div>
-            <div id="capture-output"></div>
+            <div class="camera-hidden" id="capture-output"></div>
         </div>
 
         <div class="result-section">
             <h2>可能的牌型：</h2>
-            <ul id="result"></ul>
+            <div id="result" class="result-list"></div>
+        </div>
+
+        <!-- Info modal -->
+        <div class="modal-overlay" id="info-modal">
+            <div class="modal-box">
+                <button class="modal-close" onclick="closeInfoModal()">×</button>
+                <div id="modal-title" class="modal-title"></div>
+                <div id="modal-body" class="modal-body"></div>
+            </div>
         </div>
     </div>
 
@@ -179,27 +188,43 @@
         // Camera logic
         let cameraStream = null;
         window.startCamera = function() {
+            const section = document.querySelector('.camera-section');
             const video = document.getElementById('camera-video');
             const captureBtn = document.getElementById('capture-btn');
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                const constraints = { video: { facingMode: { exact: "environment" } } };
-                navigator.mediaDevices.getUserMedia(constraints)
-                    .catch(function() {
-                        // 降级：尝试宽松环境后置
-                        return navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                    })
-                    .then(function(stream) {
-                        cameraStream = stream;
-                        video.srcObject = stream;
-                        video.style.display = 'block';
-                        captureBtn.style.display = 'inline-block';
-                        document.getElementById('capture-output').textContent = '摄像头已开启（实时预览中）';
-                    })
-                    .catch(function(err) {
-                        document.getElementById('capture-output').textContent = '摄像头访问失败：' + err.message;
-                    });
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    const constraints = { video: { facingMode: { exact: "environment" } } };
+                    navigator.mediaDevices.getUserMedia(constraints)
+                        .catch(function() {
+                            // 降级：尝试宽松环境后置
+                            return navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                        })
+                        .then(function(stream) {
+                            cameraStream = stream;
+                            video.srcObject = stream;
+                            video.style.display = 'block';
+                            captureBtn.style.display = 'inline-block';
+                            document.getElementById('capture-output').textContent = '摄像头已开启（实时预览中）';
+                        })
+                        .catch(function(err) {
+                            document.getElementById('capture-output').textContent = '摄像头访问失败：' + err.message;
+                            section.classList.add('hidden');
+                        });
+                } else {
+                    document.getElementById('capture-output').textContent = '浏览器不支持摄像头访问';
+                }
             } else {
-                document.getElementById('capture-output').textContent = '浏览器不支持摄像头访问';
+                // 关闭摄像头
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    cameraStream = null;
+                }
+                video.srcObject = null;
+                video.style.display = 'none';
+                captureBtn.style.display = 'none';
+                document.getElementById('capture-output').textContent = '摄像头已关闭';
+                section.classList.add('hidden');
             }
         };
 
@@ -216,14 +241,20 @@
             canvas.width = video.videoWidth || 320;
             canvas.height = video.videoHeight || 240;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/png');
-            img.src = dataUrl;
+            const dataURL = canvas.toDataURL('image/png');
+            img.src = dataURL;
             img.style.display = 'block';
-            // Provide data stream info for future recognition
-            const size = Math.round(dataUrl.length * 0.75 / 1024); // approximate KB
-            output.textContent = '已拍照并捕获图片数据流（base64，约 ' + size + ' KB），可用于后续视觉识别接入。';
-            // Save to hidden field or expose globally for recognition integration
-            window.capturedImageData = dataUrl;
+            output.textContent = '已拍照，可上传或进一步识别';
+        };
+
+        // Info modal utilities (for result details)
+        window.openInfoModal = function(title, body) {
+            document.getElementById('modal-title').innerHTML = title + '<button class="modal-close" onclick="closeInfoModal()">×</button>';
+            document.getElementById('modal-body').textContent = body;
+            document.getElementById('info-modal').classList.add('open');
+        };
+        window.closeInfoModal = function() {
+            document.getElementById('info-modal').classList.remove('open');
         };
     </script>
 </body>

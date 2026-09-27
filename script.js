@@ -188,8 +188,9 @@ function calculate() {
   resultList.innerHTML = "";
   
   if (validGroups.length === 0) {
-    const li = document.createElement("li");
-    li.textContent = "无牛";
+    const li = document.createElement("div");
+    li.className = "result-item";
+    li.innerHTML = '<span class="result-main">无牛</span>';
     resultList.appendChild(li);
     return;
   }
@@ -209,8 +210,9 @@ function calculate() {
   
   // 如果没有任何结果（理论上不会发生），显示无牛
   if (results.length === 0) {
-    const li = document.createElement("li");
-    li.textContent = "无牛";
+    const li = document.createElement("div");
+    li.className = "result-item";
+    li.innerHTML = '<span class="result-main">无牛</span>';
     resultList.appendChild(li);
     return;
   }
@@ -218,34 +220,89 @@ function calculate() {
   // 按倍数降序排序（相同倍数则保持发现顺序）
   results.sort((a,b) => b.multiplier - a.multiplier);
   
-  // 显示结果（带组合证明）
+  // 显示结果（简化版 + Info 按钮）
   results.forEach((info) => {
-    const li = document.createElement("li");
-    const group = info.group;
-    let proofText = '';
-    if (info.desc.includes('五只公')) {
-      // 五只公：展示全部5张
-      const allCards = cards.map(c => c.original).join(', ');
-      proofText = `—— 全牌：${allCards}`;
-    } else if (group) {
-      const threeStr = group.three.map(i => cards[i].original).join(', ');
-      const twoStr = group.two.map(i => cards[i].original).join(', ');
-      const threeVals = group.three.map(i => cards[i].value);
-      const twoVals = group.two.map(i => cards[i].value);
-      const threeSum = threeVals.reduce((a,b)=>a+b,0);
-      const twoSumVal = twoVals.reduce((a,b)=>a+b,0);
-      const niuVal = info.desc.includes('牛') ? (parseInt(info.desc.match(/牛(\d+)/)?.[1]) || twoSumVal % 10) : (twoSumVal % 10);
-      // 判断是否涉及3↔6转换（简化提示）
-      const hasConv = group.three.some(i => cards[i].rank === '3' || cards[i].rank === '6');
-      const convNote = hasConv ? '（可3↔6转换）' : '';
-      proofText = `—— 三张凑10组合：[${threeStr}] (和为${threeSum}${convNote})；剩余两张：[${twoStr}] (和为${twoSumVal}，个位为${niuVal === 0 ? '牛牛' : niuVal}，即${info.desc.split('(')[0].trim()})`;
-    } else {
-      proofText = '';
-    }
-    li.innerHTML = '<strong>' + info.desc + '</strong> ' + proofText;
-    resultList.appendChild(li);
+    const div = document.createElement("div");
+    div.className = "result-item";
+    
+    // 主显示：牌型名称 + 倍数
+    const mainSpan = document.createElement("span");
+    mainSpan.className = "result-main";
+    mainSpan.textContent = info.desc;
+    
+    // Info 按钮
+    const infoBtn = document.createElement("button");
+    infoBtn.className = "info-btn";
+    infoBtn.textContent = "ℹ️";
+    infoBtn.setAttribute("aria-label", "详细解释");
+    infoBtn.onclick = () => openInfoModal(info, cards);
+    
+    div.appendChild(mainSpan);
+    div.appendChild(infoBtn);
+    resultList.appendChild(div);
   });
 }
+
+// 打开详细解释弹窗
+function openInfoModal(info, cards) {
+  const modal = document.getElementById('info-modal');
+  const title = document.getElementById('modal-title');
+  const body = document.getElementById('modal-body');
+  
+  title.textContent = info.desc;
+  
+  const group = info.group;
+  let html = '';
+  
+  if (info.desc.includes('五只公')) {
+    const allCards = cards.map(c => c.original).join(', ');
+    html = `
+      <div class="step"><strong>牌型判定：</strong> 所有5张牌均为 J/Q/K</div>
+      <div class="step"><strong>全牌：</strong> ${allCards}</div>
+      <div class="step"><strong>倍数：</strong> 5倍</div>
+    `;
+  } else if (group) {
+    const threeCards = group.three.map(i => cards[i]);
+    const twoCards = group.two.map(i => cards[i]);
+    const threeStr = threeCards.map(c => c.original).join(' + ');
+    const twoStr = twoCards.map(c => c.original).join(' + ');
+    const threeVals = threeCards.map(c => c.value);
+    const twoVals = twoCards.map(c => c.value);
+    const threeSum = threeVals.reduce((a,b)=>a+b,0);
+    const twoSumVal = twoVals.reduce((a,b)=>a+b,0);
+    const niuVal = info.desc.includes('牛') ? (parseInt(info.desc.match(/牛(\\d+)/)?.[1]) || twoSumVal % 10) : (twoSumVal % 10);
+    const hasConv = threeCards.some(c => c.rank === '3' || c.rank === '6');
+    const convNote = hasConv ? '（支持 3↔6 转换）' : '';
+    
+    html = `
+      <div class="step"><strong>三张凑10组合：</strong> ${threeStr} <em>${convNote}</em></div>
+      <div class="step"><strong>三张点数和：</strong> ${threeSum} (10/20/30 的倍数)</div>
+      <div class="step"><strong>剩余两张：</strong> ${twoStr}</div>
+      <div class="step"><strong>两张点数和：</strong> ${twoSumVal}</div>
+      <div class="step"><strong>取个位数 (牛值)：</strong> ${niuVal === 0 ? '牛牛 (即 10)' : '牛' + niuVal}</div>
+      <div class="step"><strong>最终牌型：</strong> ${info.desc}</div>
+    `;
+  } else {
+    html = '<div class="step">无法解析组合</div>';
+  }
+  
+  body.innerHTML = html;
+  modal.classList.add('active');
+}
+
+// 关闭弹窗
+function closeInfoModal() {
+  const modal = document.getElementById('info-modal');
+  modal.classList.remove('active');
+}
+
+// 点击遮罩关闭
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('info-modal');
+  if (e.target === modal) {
+    modal.classList.remove('active');
+  }
+});
 
 // 为了向后兼容，保留全局函数名 calculate
 window.calculate = calculate;
