@@ -247,15 +247,6 @@
             output.textContent = '已拍照，可上传或进一步识别';
         };
 
-        // Info modal utilities (for result details)
-        window.openInfoModal = function(title, body) {
-            document.getElementById('modal-title').innerHTML = title + '<button class="modal-close" onclick="closeInfoModal()">×</button>';
-            document.getElementById('modal-body').textContent = body;
-            document.getElementById('info-modal').classList.add('open');
-        };
-        window.closeInfoModal = function() {
-            document.getElementById('info-modal').classList.remove('open');
-        };
     </script>
 </body>
 </html>

@@ -225,18 +225,24 @@ function calculate() {
     const div = document.createElement("div");
     div.className = "result-item";
     
-    const mainSpan = document.createElement("span");
-    // 主显示：简洁格式 — 牌型 + 剩余两张 / 三张组合
     const group = info.group;
-    let compactLine = info.desc;
-    if (group && cards) {
-      const threeStr = group.three.map(i => cards[i].original).join(', ');
-      const twoStr = group.two.map(i => cards[i].original).join(', ');
-      compactLine = `${info.desc} ：${twoStr}\n                      ${threeStr}`;
-    }
-    mainSpan.className = "result-main";
-    mainSpan.style.whiteSpace = 'pre-line';
-    mainSpan.textContent = compactLine;
+    const twoStr = (group && cards) ? group.two.map(i => cards[i].original).join(', ') : '';
+    const threeStr = (group && cards) ? group.three.map(i => cards[i].original).join(', ') : '';
+    
+    const descSpan = document.createElement("span");
+    descSpan.className = "result-desc";
+    descSpan.textContent = info.desc;
+    
+    const cardsCol = document.createElement("div");
+    cardsCol.className = "cards-col";
+    const top = document.createElement("div");
+    top.className = "cards-two";
+    top.textContent = twoStr;
+    const bot = document.createElement("div");
+    bot.className = "cards-three";
+    bot.textContent = threeStr;
+    cardsCol.appendChild(top);
+    cardsCol.appendChild(bot);
     
     // Info 按钮
     const infoBtn = document.createElement("button");
@@ -245,7 +251,8 @@ function calculate() {
     infoBtn.setAttribute("aria-label", "详细解释");
     infoBtn.onclick = () => openInfoModal(info, cards);
     
-    div.appendChild(mainSpan);
+    div.appendChild(descSpan);
+    div.appendChild(cardsCol);
     div.appendChild(infoBtn);
     resultList.appendChild(div);
   });
@@ -295,20 +302,20 @@ function openInfoModal(info, cards) {
   }
   
   body.innerHTML = html;
-  modal.classList.add('active');
+  modal.classList.add('open');
 }
 
 // 关闭弹窗
 function closeInfoModal() {
   const modal = document.getElementById('info-modal');
-  modal.classList.remove('active');
+  modal.classList.remove('open');
 }
 
 // 点击遮罩关闭
 document.addEventListener('click', (e) => {
   const modal = document.getElementById('info-modal');
   if (e.target === modal) {
-    modal.classList.remove('active');
+    modal.classList.remove('open');
   }
 });
 
