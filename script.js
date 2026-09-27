@@ -225,10 +225,18 @@ function calculate() {
     const div = document.createElement("div");
     div.className = "result-item";
     
-    // 主显示：牌型名称 + 倍数
     const mainSpan = document.createElement("span");
+    // 主显示：简洁格式 — 牌型 + 剩余两张 / 三张组合
+    const group = info.group;
+    let compactLine = info.desc;
+    if (group && cards) {
+      const threeStr = group.three.map(i => cards[i].original).join(', ');
+      const twoStr = group.two.map(i => cards[i].original).join(', ');
+      compactLine = `${info.desc} ：${twoStr}\n                      ${threeStr}`;
+    }
     mainSpan.className = "result-main";
-    mainSpan.textContent = info.desc;
+    mainSpan.style.whiteSpace = 'pre-line';
+    mainSpan.textContent = compactLine;
     
     // Info 按钮
     const infoBtn = document.createElement("button");
