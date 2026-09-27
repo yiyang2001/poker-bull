@@ -368,6 +368,7 @@ function calculateBlackjack() {
     var val = (rank === 'A') ? 11 : (['J','Q','K'].indexOf(rank) !== -1 ? 10 : (parseInt(rank,10) || 0));
     cardObjs.push({rank: rank, val: val, original: s.trim()});
   }
+  if (cardObjs.length > 5) { document.getElementById('bj-result').innerHTML = '<div style="color:#c62828">手牌不能超过5张（最多五龙规则）</div>'; return; }
   if (cardObjs.length === 0) { document.getElementById('bj-result').innerHTML = '<div style="color:#c62828">无法识别牌值</div>'; return; }
   var n = cardObjs.length;
   var aceCount = cardObjs.filter(function(c){ return c.rank === 'A'; }).length;
@@ -399,7 +400,7 @@ function calculateBlackjack() {
   var bestInfo = computeBest(cardObjs);
   var sum = bestInfo.sum;
   var aRule = bestInfo.rule;
-  var twoAces = aceCount === 2;
+  var twoAces = (aceCount === 2 && n === 2);
   var isFiveCards = n === 5;
   var isFiveDragon = isFiveCards && sum <= 21;
   var isFiveBust = isFiveCards && sum > 21;
@@ -475,6 +476,8 @@ function open21Info() {
   document.getElementById('info-modal').classList.add('open');
 }
 
+function clear21() { selected = []; document.getElementById('bj-cards').value = ''; document.getElementById('bj-selected').textContent = '已选：无'; document.querySelectorAll('#bj-card-grid .card-btn').forEach(b=>{b.style.background='#fff';b.style.color='#111';b.style.fontWeight='400';b.textContent=b.textContent.replace(' ×','');}); document.getElementById('bj-result').innerHTML=''; }
+function undo21() { if (selected.length === 0) return; selected.pop(); var r = selected[selected.length-1] || ''; var btns = document.querySelectorAll('#bj-card-grid .card-btn'); for (var i=0;i<btns.length;i++){ var btn=btns[i]; var raw=btn.textContent.replace(' ×','').split(' ×')[0]; if (raw===r) { btn.style.background='#fff'; btn.style.color='#111'; btn.style.fontWeight='400'; } } var last = selected[selected.length-1]; if (!last) { document.getElementById('bj-cards').value=''; document.getElementById('bj-selected').textContent='已选：无'; } else { document.getElementById('bj-cards').value=selected.join(','); document.getElementById('bj-selected').textContent='已选：'+selected.join(','); var btns2=document.querySelectorAll('#bj-card-grid .card-btn'); for(var j=0;j<btns2.length;j++){ var btn2=btns2[j]; var raw2=btn2.textContent.replace(' ×','').split(' ×')[0]; var cnt=selected.filter(function(x){return x===raw2;}).length; btn2.textContent=raw2+(cnt>0?' ×'+cnt:''); btn2.style.background=cnt>0?'var(--primary)':'#fff'; btn2.style.color=cnt>0?'#fff':'#111'; btn2.style.fontWeight=cnt>0?'700':'400'; } } }
 window.switchTab = switchTab;
 window.calculateBlackjack = calculateBlackjack;
 window.open21Info = open21Info;

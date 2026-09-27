@@ -130,6 +130,8 @@
                 <input type="hidden" id="bj-cards" value="">
                 <div id="bj-selected" style="flex:1;font-size:0.85rem;color:#555;min-height:2rem;">已选：无</div>
                 <button onclick="calculateBlackjack()">计算</button>
+                <button onclick="clear21()" style="padding:0.35rem 0.6rem;border-radius:0.3rem;border:1px solid #ccc;background:#fff;font-size:0.85rem;cursor:pointer;">清空重置</button>
+                <button onclick="undo21()" style="padding:0.35rem 0.6rem;border-radius:0.3rem;border:1px solid #ccc;background:#fff;font-size:0.85rem;cursor:pointer;">撤销上一步</button>
             </div>
             <div class="bj-result" id="bj-result"></div>
             <div class="info-row">
@@ -277,7 +279,7 @@
   var ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
   var grid = document.getElementById('bj-card-grid');
   if (!grid) return;
-  var selected = [];
+  window.bjSelected = []; var selected = window.bjSelected;
   function update() {
     document.getElementById('bj-cards').value = selected.join(',');
     document.getElementById('bj-selected').textContent = selected.length ? '已选：' + selected.join(',') : '已选：无';
@@ -290,6 +292,7 @@
     btn.onclick = function(e){
       e.preventDefault();
       var count = selected.filter(function(x){ return x === r; }).length;
+      if (selected.length >= 5 && selected.filter(function(x){return x===r;}).length === 0) { return; }
       if (count < 4) {
         selected.push(r);
       } else {
