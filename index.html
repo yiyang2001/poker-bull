@@ -93,6 +93,7 @@
         </div>
 
         <!-- Camera Capture (collapsed by default) -->
+        <button onclick="document.getElementById('camera-section').classList.toggle('hidden');this.textContent=document.getElementById('camera-section').classList.contains('hidden')?'展开摄像头':'收起摄像头';" style="margin-bottom:0.5rem;padding:0.35rem 0.8rem;border-radius:0.3rem;border:1px solid #ccc;background:#f3f4f6;font-size:0.85rem;cursor:pointer;">展开摄像头</button>
         <div class="camera-section hidden" id="camera-section">
             <h2>摄像头拍照识别入口</h2>
             <button onclick="startCamera()">开启摄像头</button>
