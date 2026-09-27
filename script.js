@@ -480,4 +480,52 @@ function clear21() { selected = []; document.getElementById('bj-cards').value = 
 function undo21() { if (selected.length === 0) return; selected.pop(); var r = selected[selected.length-1] || ''; var btns = document.querySelectorAll('#bj-card-grid .card-btn'); for (var i=0;i<btns.length;i++){ var btn=btns[i]; var raw=btn.textContent.replace(' ×','').split(' ×')[0]; if (raw===r) { btn.style.background='#fff'; btn.style.color='#111'; btn.style.fontWeight='400'; } } var last = selected[selected.length-1]; if (!last) { document.getElementById('bj-cards').value=''; document.getElementById('bj-selected').textContent='已选：无'; } else { document.getElementById('bj-cards').value=selected.join(','); document.getElementById('bj-selected').textContent='已选：'+selected.join(','); var btns2=document.querySelectorAll('#bj-card-grid .card-btn'); for(var j=0;j<btns2.length;j++){ var btn2=btns2[j]; var raw2=btn2.textContent.replace(' ×','').split(' ×')[0]; var cnt=selected.filter(function(x){return x===raw2;}).length; btn2.textContent=raw2+(cnt>0?' ×'+cnt:''); btn2.style.background=cnt>0?'var(--primary)':'#fff'; btn2.style.color=cnt>0?'#fff':'#111'; btn2.style.fontWeight=cnt>0?'700':'400'; } } }
 window.switchTab = switchTab;
 window.calculateBlackjack = calculateBlackjack;
+
+window.openCamModal = function() {
+  var modal = document.getElementById('cam-modal');
+  var video = document.getElementById('cam-video');
+  modal.style.display = 'flex';
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .catch(function() { return navigator.mediaDevices.getUserMedia({ video: true }); })
+      .then(function(stream) {
+        video.srcObject = stream;
+        video.play();
+        document.getElementById('cam-status').textContent = '实时取景中 — 对准手牌，点击快门拍照';
+        window.camStream = stream;
+      })
+      .catch(function(err) {
+        document.getElementById('cam-status').textContent = '无法访问相机：' + err.message + '（请检查权限）';
+      });
+  } else {
+    document.getElementById('cam-status').textContent = '浏览器不支持相机访问';
+  }
+};
+window.closeCamModal = function() {
+  var modal = document.getElementById('cam-modal');
+  var video = document.getElementById('cam-video');
+  modal.style.display = 'none';
+  if (window.camStream) { window.camStream.getTracks().forEach(function(t){ t.stop(); }); window.camStream = null; }
+  video.srcObject = null;
+};
+window.shutterCapture = function() {
+  var video = document.getElementById('cam-video');
+  var canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  // Best-effort: try basic parsing via a quick visual count (not real AI) + manual fallback
+  var status = document.getElementById('cam-status');
+  status.innerHTML = '已捕获（内存处理，不保存相册）<br>识别功能需后端模型，本模块暂提供手动输入支持';
+  // Try to fill a basic result using image data URL (for future integration)
+  try {
+    var dataURL = canvas.toDataURL('image/png');
+    // For demo: just log that image is captured (real parsing requires backend)
+    console.log('Captured frame length:', dataURL.length);
+  } catch(e) {}
+  // Auto-close after brief delay
+  setTimeout(function(){ window.closeCamModal(); }, 2500);
+};
+
 window.open21Info = open21Info;

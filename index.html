@@ -136,6 +136,7 @@
             </div>
             <div class="bj-result" id="bj-result"></div>
             <div class="info-row">
+                <button onclick="openCamModal()" style="margin-right:0.5rem;padding:0.35rem 0.7rem;border-radius:0.3rem;border:1px solid #999;background:#111;color:#fff;font-size:0.8rem;cursor:pointer;">📷 实时拍照识牌</button>
                 <button class="prob-btn" onclick="open21Info()" aria-label="概率详情">📊 概率详情</button>
             </div>
         </div>
@@ -310,5 +311,15 @@
   });
 })();
 </script>
+
+<div id="cam-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:1rem;">
+  <video id="cam-video" autoplay playsinline style="width:100%;max-width:420px;max-height:60vh;border-radius:0.6rem;border:2px solid #fff;object-fit:cover;background:#000;"></video>
+  <div style="margin-top:1rem;display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+    <button onclick="closeCamModal()" style="padding:0.55rem 1rem;border-radius:0.4rem;border:none;background:#333;color:#fff;font-weight:600;cursor:pointer;">关闭取景</button>
+    <button onclick="shutterCapture()" style="padding:0.55rem 1.2rem;border-radius:50%;width:4rem;height:4rem;background:#fff;border:3px solid #ddd;color:#111;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);">快门</button>
+  </div>
+  <div id="cam-status" style="margin-top:0.75rem;color:#fff;font-size:0.9rem;text-align:center;max-width:420px;line-height:1.4;">点击快门拍照，画面仅在内存处理，不保存到相册</div>
+</div>
+
 </body>
 </html>
