@@ -69,8 +69,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>牛牛游戏牌型计算器</h1>
+        <h1>马来民间牌型计算器</h1>
+        <div class="tabs" role="tablist" aria-label="计算器模式">
+            <button class="tab-btn active" onclick="switchTab('bull')" id="tab-bull" aria-selected="true">🐮 牛牛计算器</button>
+            <button class="tab-btn" onclick="switchTab('21')" id="tab-21" aria-selected="false">🃏 21点助手</button>
+        </div>
 
+        <div id="bull-panel" class="panel">
         <!-- Original text input -->
         <div class="input-section">
             <label for="cards">输入5张牌（用逗号分隔，例如：A♠,2♥,3♣,10♦,K♥）：</label>
@@ -105,12 +110,28 @@
             <div id="result" class="result-list"></div>
         </div>
 
+        </div><!-- /bull-panel -->
+
         <!-- Info modal -->
         <div class="modal-overlay" id="info-modal">
             <div class="modal-box">
                 <button class="modal-close" onclick="closeInfoModal()">×</button>
                 <div id="modal-title" class="modal-title"></div>
                 <div id="modal-body" class="modal-body"></div>
+            </div>
+        </div>
+
+        <!-- 21点助手面板 -->
+        <div id="blackjack-panel" class="blackjack-panel hidden">
+            <h2>🃏 21点助手</h2>
+            <p class="sub">无庄家明牌 · 盲打规则 · 15分可撤退 · 16分起步</p>
+            <div class="bj-input-row">
+                <input type="text" id="bj-cards" placeholder="输入手牌（用逗号分隔），例如：A,7,K" style="flex:1; padding:0.5rem; border-radius:0.4rem; border:1px solid var(--border);">
+                <button onclick="calculateBlackjack()">计算</button>
+            </div>
+            <div class="bj-result" id="bj-result"></div>
+            <div class="info-row">
+                <button class="info-btn" onclick="open21Info()" aria-label="概率详情">ℹ️ 概率详情</button>
             </div>
         </div>
     </div>

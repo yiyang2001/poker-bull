@@ -272,6 +272,29 @@ li strong {
 .red-suit { color: #dc2626; font-weight: 600; }
 .black-suit { color: #111827; font-weight: 600; }
 
+.hidden { display: none !important; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.tab-btn {
+  padding: 0.4rem 1.1rem; border-radius: 9999px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-sub); font-size: 0.85rem;
+  font-weight: 600; cursor: pointer; transition: all 0.15s ease; letter-spacing: 0.02em;
+}
+.tab-btn.active { background: var(--primary); color: white; border-color: var(--primary-hover); box-shadow: var(--shadow-sm); }
+
+/* 21点面板 */
+.blackjack-panel { animation: fadeIn 0.2s ease; }
+.sub { text-align: center; color: var(--text-sub); font-size: 0.8rem; margin-bottom: 0.75rem; }
+.bj-input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.bj-input-row input { flex: 1; min-width: 0; }
+.bj-result {
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0;
+  border-radius: 0.75rem; padding: 1rem; min-height: 3.5rem;
+  display: flex; flex-direction: column; justify-content: center; gap: 0.4rem;
+}
+.info-row { text-align: center; margin-top: 0.75rem; }
+
 /* Responsive tweaks */
 .mc-grid {
   display: grid;

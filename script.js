@@ -333,3 +333,90 @@ document.addEventListener('click', (e) => {
 
 // 为了向后兼容，保留全局函数名 calculate
 window.calculate = calculate;
+/* 21点助手 */
+function switchTab(mode) {
+  document.getElementById('bull-panel').classList.toggle('hidden', mode !== 'bull');
+  document.getElementById('blackjack-panel').classList.toggle('hidden', mode !== '21');
+  document.getElementById('tab-bull').classList.toggle('active', mode === 'bull');
+  document.getElementById('tab-bull').setAttribute('aria-selected', mode === 'bull');
+  document.getElementById('tab-21').classList.toggle('active', mode === '21');
+  document.getElementById('tab-21').setAttribute('aria-selected', mode === '21');
+}
+
+function parseCardValue(s) {
+  s = s.trim();
+  var rank = s.replace(/[\s\W]/g, '').toUpperCase();
+  rank = rank.replace(/SPADE|HEART|DIAMOND|CLUB/gi, '');
+  rank = rank.replace(/[^A-Z0-9]/g, '');
+  if (rank === 'A') return 11;
+  if (['J','Q','K'].indexOf(rank) !== -1) return 10;
+  var n = parseInt(rank, 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function calculateBlackjack() {
+  var input = document.getElementById('bj-cards').value;
+  if (!input.trim()) { document.getElementById('bj-result').innerHTML = '<div style="color:#c62828">请输入手牌</div>'; return; }
+  var parts = input.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var values = [];
+  for (var i=0; i<parts.length; i++) {
+    var v = parseCardValue(parts[i]);
+    if (v > 0) values.push(v);
+  }
+  if (values.length === 0) { document.getElementById('bj-result').innerHTML = '<div style="color:#c62828">无法识别牌值</div>'; return; }
+
+  var sum = values.reduce(function(a,b){ return a+b; }, 0);
+  var hasA = values.indexOf(11) !== -1;
+  while (sum > 21 && hasA) { sum -= 10; hasA = false; }
+
+  var deckSize = 52;
+  var drawn = values.length;
+  var remainingDeck = deckSize - drawn;
+
+  var countDrawn = {2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0};
+  for (var j=0; j<values.length; j++) {
+    var v = values[j];
+    if (v === 11) countDrawn[11]++;
+    else if (v === 10) countDrawn[10]++;
+    else countDrawn[v]++;
+  }
+
+  var categories = {2:{label:'2',count:4},3:{label:'3',count:4},4:{label:'4',count:4},5:{label:'5',count:4},6:{label:'6',count:4},7:{label:'7',count:4},8:{label:'8',count:4},9:{label:'9',count:4},10:{label:'10 / JQK',count:16},11:{label:'A',count:4}};
+  var bustProb = 0;
+  var probTable = '';
+  for (var k in categories) {
+    if (!categories.hasOwnProperty(k)) continue;
+    var info = categories[k];
+    var rem = info.count - (countDrawn[k] || 0);
+    var p = rem / remainingDeck;
+    var cardVal = parseInt(k, 10);
+    var finalSum = sum + cardVal;
+    var softA = hasA;
+    while (finalSum > 21 && softA) { finalSum -= 10; softA = false; }
+    var isBust = finalSum > 21;
+    if (isBust) bustProb += p;
+    probTable += '<div class="prob-row"><span class="prob-label">' + info.label + '</span><span class="prob-val">' + (p*100).toFixed(1) + '%</span><span class="prob-tag ' + (isBust ? 'tag-bust' : 'tag-safe') + '">' + (isBust ? '爆牌' : '安全') + '</span></div>';
+  }
+  var pct = (bustProb * 100).toFixed(1);
+  var rec = '';
+  if (sum === 15) rec = '<strong>15分节点：</strong> 撤退保底（安全），补牌爆牌风险约 <strong>' + pct + '%</strong>。建议：若无把握，优先撤退。';
+  else if (sum === 16) rec = '<strong>16分节点：</strong> 已达起步线，爆牌风险约 <strong>' + pct + '%</strong>。建议：优先停牌保本；追求收益时谨慎补牌。';
+  else if (sum < 15) rec = '<strong>当前 ' + sum + ' 分：</strong> 低于起步线，建议继续补牌，爆牌概率 ' + pct + '%。';
+  else rec = '<strong>当前 ' + sum + ' 分：</strong> 高于起步线，爆牌风险 ' + pct + '%，建议评估后决定停牌或补牌。';
+  document.getElementById('bj-result').innerHTML = '<div style="font-size:0.95rem;line-height:1.6;"><div><strong>当前手牌总分：</strong> <span style="font-size:1.3rem;font-weight:700;color:' + (sum>21 ? '#c62828' : '#111827') + '">' + sum + '</span></div><div style="margin-top:0.25rem;font-size:0.85rem;color:#555;"><strong>下一张爆牌概率：</strong> <span style="font-weight:700;color:' + (parseFloat(pct)>50 ? '#c62828' : '#2e7d32') + '">' + pct + '%</span></div><div style="margin-top:0.5rem;font-size:0.8rem;color:#666;">' + rec + '</div></div>';
+  window._21probTable = probTable;
+  window._21sum = sum;
+  window._21pct = pct;
+}
+
+function open21Info() {
+  var body = document.getElementById('modal-body');
+  var title = document.getElementById('modal-title');
+  title.textContent = '21点 — 抽牌概率详情';
+  body.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.85rem;">' + (window._21probTable || '<div>请先计算</div>') + '</div>';
+  document.getElementById('info-modal').classList.add('open');
+}
+
+window.switchTab = switchTab;
+window.calculateBlackjack = calculateBlackjack;
+window.open21Info = open21Info;
