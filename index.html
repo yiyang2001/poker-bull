@@ -270,7 +270,9 @@
             const dataURL = canvas.toDataURL('image/png');
             img.src = dataURL;
             img.style.display = 'block';
-            output.textContent = '已拍照，可上传或进一步识别';
+            video.style.display = 'none'; // 暂停实时流以减少卡顿
+            captureBtn.textContent = '已捕获（点击重新开启）';
+            output.innerHTML = '<strong>拍照成功（已冻结）</strong> — 当前模块无自动识别引擎，需手动输入手牌。可点击“开启摄像头”重新预览。';
         };
     </script>
 
