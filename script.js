@@ -472,7 +472,7 @@ function open21Info() {
   var title = document.getElementById('modal-title');
   title.textContent = '21点 — 抽牌概率详情';
   var tbl = window._21probTable || '<div>请先计算</div>';
-  body.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.85rem;">' + tbl + '</div>';
+  body.innerHTML = '<div style="display:block;padding:0.25rem 0;"><div style="font-size:0.85rem;line-height:1.5;">' + tbl + '</div></div>';
   if (window._21label) {
     body.innerHTML += '<div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid var(--border);font-weight:700;font-size:1rem;color:var(--text-main);">' + window._21label + ' · 当前 ' + window._21sum + ' 分 · 爆牌风险 ' + window._21pct + '%</div>';
   }

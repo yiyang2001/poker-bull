@@ -307,6 +307,21 @@ li strong {
 }
 .info-row { text-align: center; margin-top: 0.75rem; }
 
+.prob-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.85rem;
+}
+.prob-row:last-child { border-bottom: none; }
+.prob-label { font-weight: 600; color: var(--text-main); min-width: 3rem; }
+.prob-val { font-weight: 700; color: var(--text-main); }
+.prob-tag { padding: 0.15rem 0.35rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; }
+.tag-bust { background: #fee2e2; color: #c62828; }
+.tag-safe { background: #e8f5e9; color: #2e7d32; }
+
 /* Responsive tweaks */
 .mc-grid {
   display: grid;
