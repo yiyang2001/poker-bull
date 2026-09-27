@@ -429,18 +429,14 @@ function calculateBlackjack() {
     var info = categories[k];
     var rem = Math.max(0, info.count - (countDrawn[k] || 0));
     var p = (remainingDeck > 0) ? (rem / remainingDeck) : 0;
-    var cardVal = parseInt(k, 10);
-    var finalSum = sum + cardVal;
-    if (cardObjs.length === 2 && aceCount > 0) {
-      // Approximate soft A handling for next draw
-      if (cardVal === 11 && sum <= 11) finalSum = sum + 11; // A=11
-      else if (cardVal === 11 && sum > 11) finalSum = sum + 10; // A as 10 if 11 would bust
-    } else if (cardObjs.length >= 3 && aceCount > 0) {
-      if (cardVal === 11) finalSum = sum + 10; // 3+ cards A treated as 10 for simplicity in prob
-    }
+    var cardVal = (k === '11') ? 11 : (k === '10' ? 10 : parseInt(k,10));
+    var cardsAfter = cardObjs.slice();
+    cardsAfter.push({rank: (cardVal === 11) ? 'A' : (cardVal === 10 ? '10' : cardVal.toString()), val: cardVal, original: info.label});
+    var best = computeBest(cardsAfter);
+    var finalSum = best.sum;
     var isBust = finalSum > 21;
     if (isBust) bustProb += p;
-    probTable += '<div class="prob-row"><span class="prob-label">' + info.label + '</span><span class="prob-val">' + (p*100).toFixed(1) + '%</span><span class="prob-tag ' + (isBust ? 'tag-bust' : 'tag-safe') + '">' + (isBust ? '爆牌' : '安全') + '</span></div>';
+    probTable += '<div class="prob-row"><span class="prob-label">' + info.label + '</span><span class="prob-val">补到后 ' + finalSum + ' 分' + (isBust ? ' <span style="color:#c62828;font-weight:700;">爆牌</span>' : ' <span style="color:#2e7d32;font-weight:700;">安全</span>') + '</span><span class="prob-tag">' + (p*100).toFixed(1) + '%</span></div>';
   }
   var pct = (bustProb * 100).toFixed(1);
   var resultHTML = '<div style="font-size:0.95rem;line-height:1.6;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;"><strong>当前总分：<span style="font-size:1.25rem;color:' + (sum > 21 ? '#c62828' : '#111827') + '">' + sum + '</span></strong><span style="font-weight:700;color:' + (mult > 1 ? '#c62828' : '#111827') + '">' + mult + '倍 · ' + label + '</span></div><div style="font-size:0.8rem;color:#555;margin-bottom:0.35rem;"><strong>A 规则：</strong> ' + aRule + '</div><div style="font-size:0.8rem;color:#555;margin-bottom:0.35rem;"><strong>手牌数：</strong> ' + n + ' 张</div><div style="font-size:0.85rem;color:#555;margin-bottom:0.5rem;"><strong>爆牌概率（下一张）：</strong> <span style="font-weight:700;color:' + (parseFloat(pct) > 50 ? '#c62828' : '#2e7d32') + '">' + pct + '%</span></div>';
