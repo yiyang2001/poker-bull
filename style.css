@@ -365,6 +365,14 @@ li strong {
   color: var(--text-main);
 }
 
+.prob-btn {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.45rem 0.85rem; border-radius: 9999px; border: 1px solid var(--primary);
+  background: var(--primary); color: white; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: filter 0.15s ease;
+}
+.prob-btn:hover { filter: brightness(1.05); }
+
 @media (max-width: 640px) {
   .container { padding: 1.25rem 1rem; margin: 1rem auto; }
   h1 { font-size: 1.35rem; }
