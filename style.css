@@ -273,6 +273,63 @@ li strong {
 .black-suit { color: #111827; font-weight: 600; }
 
 /* Responsive tweaks */
+.mc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.mc-block {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+}
+.mc-block.full {
+  grid-column: 1 / -1;
+}
+.mc-label {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-sub);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.05em;
+}
+.mc-cards {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  word-break: break-word;
+}
+.mc-badge {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.mc-tag {
+  display: inline-block;
+  background: #f59e0b;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.25rem;
+  margin-left: 0.25rem;
+  font-weight: 600;
+}
+.mc-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-main);
+}
+
 @media (max-width: 640px) {
   .container { padding: 1.25rem 1rem; margin: 1rem auto; }
   h1 { font-size: 1.35rem; }

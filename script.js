@@ -272,9 +272,14 @@ function openInfoModal(info, cards) {
   if (info.desc.includes('五只公')) {
     const allCards = cards.map(c => c.original).join(', ');
     html = `
-      <div class="step"><strong>牌型判定：</strong> 所有5张牌均为 J/Q/K</div>
-      <div class="step"><strong>全牌：</strong> ${allCards}</div>
-      <div class="step"><strong>倍数：</strong> 5倍</div>
+      <div class="mc-grid">
+        <div class="mc-block full">
+          <div class="mc-label">五只公</div>
+          <div class="mc-cards">${allCards}</div>
+          <div class="mc-badge">5倍 · 全部 J/Q/K</div>
+        </div>
+      </div>
+      <div class="mc-footer">${info.desc}</div>
     `;
   } else if (group) {
     const threeCards = group.three.map(i => cards[i]);
@@ -290,12 +295,19 @@ function openInfoModal(info, cards) {
     const convNote = hasConv ? '（支持 3↔6 转换）' : '';
     
     html = `
-      <div class="step"><strong>三张凑10组合：</strong> ${threeStr} <em>${convNote}</em></div>
-      <div class="step"><strong>三张点数和：</strong> ${threeSum} (10/20/30 的倍数)</div>
-      <div class="step"><strong>剩余两张：</strong> ${twoStr}</div>
-      <div class="step"><strong>两张点数和：</strong> ${twoSumVal}</div>
-      <div class="step"><strong>取个位数 (牛值)：</strong> ${niuVal === 0 ? '牛牛 (即 10)' : '牛' + niuVal}</div>
-      <div class="step"><strong>最终牌型：</strong> ${info.desc}</div>
+      <div class="mc-grid">
+        <div class="mc-block">
+          <div class="mc-label">三张凑10</div>
+          <div class="mc-cards">${threeStr} ${convNote ? '<span class="mc-tag">3↔6</span>' : ''}</div>
+          <div class="mc-badge">和 = ${threeSum}</div>
+        </div>
+        <div class="mc-block">
+          <div class="mc-label">剩余两张</div>
+          <div class="mc-cards">${twoStr}</div>
+          <div class="mc-badge">和 = ${twoSumVal} → ${niuVal === 0 ? '牛牛' : '牛' + niuVal}</div>
+        </div>
+      </div>
+      <div class="mc-footer">${info.desc}${convNote ? ' · ' + convNote.trim() : ''}</div>
     `;
   } else {
     html = '<div class="step">无法解析组合</div>';
