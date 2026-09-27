@@ -289,13 +289,17 @@
     btn.style.cssText = 'padding:0.35rem 0.1rem;font-size:0.85rem;min-height:2rem;border-radius:0.3rem;border:1px solid var(--border);cursor:pointer;background:#fff;';
     btn.onclick = function(e){
       e.preventDefault();
-      if (selected.indexOf(r) > -1) {
-        selected = selected.filter(function(x){ return x !== r; });
-        btn.style.background = '#fff'; btn.style.fontWeight = '400';
+      var count = selected.filter(function(x){ return x === r; }).length;
+      if (count < 4) {
+        selected.push(r);
       } else {
-        selected.push(r); btn.style.background = 'var(--primary)'; btn.style.color = '#fff'; btn.style.fontWeight = '700';
+        selected = selected.filter(function(x){ return x !== r; });
       }
+      btn.style.background = selected.indexOf(r) > -1 ? 'var(--primary)' : '#fff';
+      btn.style.color = selected.indexOf(r) > -1 ? '#fff' : '#111827';
+      btn.style.fontWeight = selected.indexOf(r) > -1 ? '700' : '400';
       update();
+      btn.textContent = r + (selected.filter(function(x){return x===r;}).length > 0 ? ' ×' + selected.filter(function(x){return x===r;}).length : '');
     };
     grid.appendChild(btn);
   });
